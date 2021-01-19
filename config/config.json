@@ -1,0 +1,22 @@
+{
+    "local" : {
+        "proxy" :[{
+                "protocol" : "socks",
+                "port" : 1081
+            },{
+                "protocol" : "https",
+                "port" : 8001
+            }
+        ]
+    },
+    "remote" : {
+        "protocol" : "vmess",
+        "address" : "108.61.183.82",
+        "port" : 10086,
+        "userID" : "598c8d05-6ff1-4ead-83f1-0babcefd75b9",
+        "alterID" : 1,
+        "level" : 0,
+        "Security" : "auto",
+        "pac" : false
+    }
+}
