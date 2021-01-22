@@ -1,4 +1,4 @@
-package core
+package vmess
 
 // User ...
 type User struct {
@@ -15,8 +15,8 @@ func NewUser(uuid, cmdKey [16]byte) *User {
 }
 
 // GetUUID 获取用户UUID
-func (u *User) GetUUID() [16]byte {
-	return u.uuid
+func (u *User) GetUUID() []byte {
+	return u.uuid[:]
 }
 
 // GetCmdKey 获取用户GetCmdKey
