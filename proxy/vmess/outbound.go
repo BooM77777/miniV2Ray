@@ -9,7 +9,7 @@ import (
 
 // OutboundHandler ...
 type OutboundHandler struct {
-	users       User
+	user        *User
 	sessionList []*ClientSession
 
 	connection net.Conn
@@ -23,7 +23,7 @@ func CreateOutboundHandlerByURL(url url.URL) *OutboundHandler {
 // CreateSession 创建新的出站会话
 func (handler *OutboundHandler) CreateSession(dist *TargetAddress) {
 	// 创建新的会话
-	session := createNewClientSession(dist)
+	session := createNewClientSession(handler.user, dist, 0, 0, 0)
 	// 发送客户端认证消息
 	handler.connection.Write(common.Must2(session.auth()).([]byte))
 	// 发送请求头部，进行密钥等的协商过程
