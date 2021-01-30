@@ -1,9 +1,11 @@
 package main
 
 import (
-	"fmt"
 	"log"
-	"math/bits"
+	"os"
+
+	"./vmessTest/client"
+	"./vmessTest/server"
 )
 
 const (
@@ -19,16 +21,16 @@ func main() {
 	// 打印版本号
 	printVersion()
 
-	// 载入配置文件
-	globalConfig, err := parseConfigFile(configFile)
-	if err != nil {
-		log.Fatal(err)
+	if len(os.Args) > 1 {
+		if os.Args[1] == "-c" {
+			client.Client()
+		} else if os.Args[1] == "-s" {
+			server.Server()
+		}
 	}
-	fmt.Println(globalConfig)
-	fmt.Println(bits.Len32(4))
-	fmt.Println(bits.Len32(8))
-	fmt.Println(bits.Len32(7))
-	fmt.Println(bits.Len32(65535))
+
+	// 载入配置文件
+	// globalConfig, err := parseConfigFile(configFile)
 
 }
 
