@@ -35,19 +35,42 @@ func (target *TargetAddress) EncodeTargetAddress() (addrBytes []byte, err error)
 
 	// 编码地址
 	switch target.addrType {
-	case AtypIP4:
+	case AddrTypeIPv4:
 		_, err = writeBuf.Write(target.ipaddr)
 		break
-	case AtypDomain:
+	case AddrTypeIPv6:
+		_, err = writeBuf.Write(target.ipaddr)
+		break
+	case AddrTypeDomain:
 		err = writeBuf.WriteByte(byte(len(target.domainName)))
 		_, err = writeBuf.Write([]byte(target.domainName))
-		break
-	case AtypIP6:
-		_, err = writeBuf.Write(target.ipaddr)
 		break
 	}
 
 	return writeBuf.Bytes(), err
+}
+
+// DecodePort 解码port
+func (target *TargetAddress) DecodePort(portBytes []byte) {
+	target.port = binary.BigEndian.Uint16(portBytes)
+}
+
+// DecodeAddress 解码目的IP或域名
+func (target *TargetAddress) DecodeAddress(addrType byte, addrBytes []byte) {
+
+	switch addrType {
+	case AddrTypeIPv4:
+		target.ipaddr = make(net.IP, 4)
+		copy(target.ipaddr, addrBytes)
+		break
+	case AddrTypeIPv6:
+		target.ipaddr = make(net.IP, 16)
+		copy(target.ipaddr, addrBytes)
+		break
+	case AddrTypeDomain:
+		target.domainName = string(addrBytes)
+		break
+	}
 }
 
 // DecodeTargetAddress 解码目的地址

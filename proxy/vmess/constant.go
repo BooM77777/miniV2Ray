@@ -26,7 +26,7 @@ const (
 
 // Atyp
 const (
-	AtypIP4    byte = 1
-	AtypDomain byte = 2
-	AtypIP6    byte = 3
+	AddrTypeIPv4   byte = 1
+	AddrTypeDomain byte = 2
+	AddrTypeIPv6   byte = 3
 )

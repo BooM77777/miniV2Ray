@@ -7,7 +7,9 @@ import (
 	"crypto/md5"
 	"encoding/binary"
 	"hash/fnv"
+	"io"
 	"math/rand"
+	"net"
 	"time"
 
 	"../../common"
@@ -62,7 +64,7 @@ func createNewClientSession(user *User, distAddr *TargetAddress, opt, sec, cmd b
 }
 
 // auth 发送用于验证客户端真实性的16B消息，只能由客户端发送
-func (s *ClientSession) auth() (authBytes []byte, err error) {
+func (s *ClientSession) auth(writer io.Writer) {
 
 	// UTC 时间，精确到秒，取值为当前时间的前后 30 秒随机值(8 字节, Big Endian)
 	binary.BigEndian.PutUint64(s.timeStamp[:], uint64(time.Now().UTC().Unix()))
@@ -76,24 +78,19 @@ func (s *ClientSession) auth() (authBytes []byte, err error) {
 	h := hmac.New(md5.New, s.user.GetUUID())
 	h.Write(s.timeStamp[:])
 
-	authBytes = h.Sum(nil)
-
-	return
+	common.Must2(writer.Write(h.Sum(nil)))
 }
 
 // encodeRequestHeader 编码一个Session的请求头部
-func (s *ClientSession) encodeRequestHeader() (retBytes []byte, err error) {
+func (s *ClientSession) encodeRequestHeader(writer io.Writer) {
 
-	var buf []byte
+	var buf, retBytes []byte
 
 	writeBuf := common.GetWriteBuffer()
 	defer common.PutWriteBuffer(writeBuf)
 
-	buf, err = common.GetBuffer(38)
+	buf = common.Must2(common.GetBuffer(38)).([]byte)
 	defer common.PutBuffer(buf)
-	if err != nil {
-		return nil, err
-	}
 
 	buf[0] = 1
 	copy(buf[1:17], s.requestIV[:])
@@ -106,20 +103,17 @@ func (s *ClientSession) encodeRequestHeader() (retBytes []byte, err error) {
 	buf[36] = 0
 	buf[37] = CmdTCP
 
-	_, err = writeBuf.Write(buf) // 写入前37个定长的子节
+	common.Must2(writeBuf.Write(buf)) // 写入前37个定长的子节
 
 	// 写入目的地址
 	var targetBytes []byte
-	targetBytes, err = s.target.EncodeTargetAddress()
-	if err != nil {
-		return nil, err
-	}
+	targetBytes = common.Must2(s.target.EncodeTargetAddress()).([]byte)
 	writeBuf.Write(targetBytes)
 
 	// 写入随机填充
 	if paddingLen > 0 {
 		var paddingBytes []byte
-		paddingBytes, err = common.GetBuffer(paddingLen)
+		paddingBytes = common.Must2(common.GetBuffer(paddingLen)).([]byte)
 		defer common.PutBuffer(paddingBytes)
 		rand.Read(paddingBytes)
 		writeBuf.Write(paddingBytes)
@@ -127,10 +121,7 @@ func (s *ClientSession) encodeRequestHeader() (retBytes []byte, err error) {
 
 	// 写入4子节校验值
 	fnv1a := fnv.New32()
-	_, err = fnv1a.Write(writeBuf.Bytes())
-	if err != nil {
-		return nil, err
-	}
+	common.Must2(fnv1a.Write(writeBuf.Bytes()))
 	writeBuf.Write(fnv1a.Sum(nil))
 
 	retBytes = writeBuf.Bytes()
@@ -140,10 +131,10 @@ func (s *ClientSession) encodeRequestHeader() (retBytes []byte, err error) {
 	stream := cipher.NewCFBEncrypter(block, s.cmdIV[:])
 	stream.XORKeyStream(retBytes, retBytes)
 
-	return
+	common.Must2(writer.Write(retBytes))
 }
 
-func (s *ClientSession) decodeResponseHeader(response []byte) {
+func (s *ClientSession) decodeResponseHeader(c net.Conn) {
 
 }
 

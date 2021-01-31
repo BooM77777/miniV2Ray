@@ -2,10 +2,6 @@ package main
 
 import (
 	"log"
-	"os"
-
-	"./vmessTest/client"
-	"./vmessTest/server"
 )
 
 const (
@@ -20,14 +16,6 @@ func main() {
 
 	// 打印版本号
 	printVersion()
-
-	if len(os.Args) > 1 {
-		if os.Args[1] == "-c" {
-			client.Client()
-		} else if os.Args[1] == "-s" {
-			server.Server()
-		}
-	}
 
 	// 载入配置文件
 	// globalConfig, err := parseConfigFile(configFile)
