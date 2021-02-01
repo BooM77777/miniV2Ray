@@ -62,10 +62,10 @@ func PutBuffer(buf []byte) error {
 	return nil
 }
 
-var writeBuffer sync.Pool
+var writeBuffer *sync.Pool
 
-func initWriteBuffer() sync.Pool {
-	return sync.Pool{
+func initWriteBuffer() *sync.Pool {
+	return &sync.Pool{
 		New: func() interface{} {
 			return &bytes.Buffer{}
 		},
@@ -74,6 +74,9 @@ func initWriteBuffer() sync.Pool {
 
 // GetWriteBuffer 申请WriteBuffer
 func GetWriteBuffer() *bytes.Buffer {
+	if writeBuffer == nil {
+		writeBuffer = initWriteBuffer()
+	}
 	return writeBuffer.Get().(*bytes.Buffer)
 }
 

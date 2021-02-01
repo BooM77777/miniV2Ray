@@ -7,6 +7,7 @@ import (
 	"errors"
 	"hash/fnv"
 	"io"
+	"log"
 
 	"../../common"
 )
@@ -16,6 +17,7 @@ type ServerSession struct {
 	user   *User          // 用户
 	target *TargetAddress // 目标转发地址
 
+	// ?
 	timeStamp [8]byte  // 时间戳
 	cmdIV     [16]byte //
 
@@ -31,21 +33,18 @@ type ServerSession struct {
 	cmd byte // 指令（TCP数据或UDP数据）
 }
 
-func decodeAuth(reader io.Reader, userHash [16]byte) {
-
-	buf := common.Must2(common.GetBuffer(16)).([]byte)
-	defer common.PutBuffer(buf)
-
-	common.Must2(reader.Read(buf))
-	copy(userHash[:], buf)
+func createNewServerSession(user *User) *ServerSession {
+	return &ServerSession{
+		user: user,
+	}
 }
 
-func (session *ServerSession) decodeRequest(reader io.Reader, iv []byte) error {
-
+// DecodeResponseHeader 解码请求头部
+func (session *ServerSession) DecodeResponseHeader(reader io.Reader) error {
 	var paddingLen, addressLen int
 
 	block := common.Must2(aes.NewCipher(session.user.GetCmdKey())).(cipher.Block)
-	stream := cipher.NewCFBDecrypter(block, iv)
+	stream := cipher.NewCFBDecrypter(block, session.cmdIV[:])
 
 	requestHeader := common.GetWriteBuffer()
 	defer common.PutWriteBuffer(requestHeader)
@@ -56,6 +55,8 @@ func (session *ServerSession) decodeRequest(reader io.Reader, iv []byte) error {
 	common.Must2(io.ReadFull(reader, buf))
 	stream.XORKeyStream(buf, buf)
 	requestHeader.Write(buf)
+
+	// log.Println("->", buf)
 
 	copy(session.requestIV[:], buf[1:17])
 	copy(session.requestKey[:], buf[17:33])
@@ -99,6 +100,7 @@ func (session *ServerSession) decodeRequest(reader io.Reader, iv []byte) error {
 
 	requestHeaderBytes := requestHeader.Bytes()
 
+	log.Println("->", requestHeaderBytes)
 	// 最终校验
 	fnv1a := fnv.New32()
 	common.Must2(fnv1a.Write(requestHeaderBytes[:len(requestHeaderBytes)-4]))

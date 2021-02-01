@@ -8,6 +8,7 @@ import (
 	"encoding/binary"
 	"hash/fnv"
 	"io"
+	"log"
 	"math/rand"
 	"net"
 	"time"
@@ -68,11 +69,10 @@ func (s *ClientSession) auth(writer io.Writer) {
 
 	// UTC 时间，精确到秒，取值为当前时间的前后 30 秒随机值(8 字节, Big Endian)
 	binary.BigEndian.PutUint64(s.timeStamp[:], uint64(time.Now().UTC().Unix()))
-
+	// log.Println("<-", s.timeStamp, s.user.GetUUID())
 	// cmdIV = md5(ts+ts+ts+ts)
-	ivsrc := common.Must2(common.GetBuffer(8 * 4)).([]byte)
-	defer common.PutBuffer(ivsrc)
-	s.cmdIV = md5.Sum(ivsrc)
+
+	s.cmdIV = getCmdIVByTimestamp(s.timeStamp)
 
 	// HMAC(H, K, M)
 	h := hmac.New(md5.New, s.user.GetUUID())
@@ -125,6 +125,7 @@ func (s *ClientSession) encodeRequestHeader(writer io.Writer) {
 	writeBuf.Write(fnv1a.Sum(nil))
 
 	retBytes = writeBuf.Bytes()
+	log.Println("<-", retBytes)
 
 	// AES-128-CFB 加密
 	block := common.Must2(aes.NewCipher(s.user.GetCmdKey())).(cipher.Block)

@@ -15,6 +15,24 @@ type TargetAddress struct {
 	port       uint16 // 端口
 }
 
+// CreateTargetAddrByIP 使用IP地址创建目标地址
+func CreateTargetAddrByIP(addrType byte, ip net.IP, port uint16) *TargetAddress {
+	return &TargetAddress{
+		addrType: addrType,
+		ipaddr:   ip,
+		port:     port,
+	}
+}
+
+// CreateTargetAddrByDomainName 使用域名创建目标地址
+func CreateTargetAddrByDomainName(addrType byte, domainName string, port uint16) *TargetAddress {
+	return &TargetAddress{
+		addrType:   addrType,
+		domainName: domainName,
+		port:       port,
+	}
+}
+
 // EncodeTargetAddress 编码目的地址
 func (target *TargetAddress) EncodeTargetAddress() (addrBytes []byte, err error) {
 
