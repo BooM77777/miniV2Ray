@@ -9,7 +9,7 @@ import (
 	"io"
 	"log"
 
-	"../../common"
+	"github.com/BooM77777/miniV2Ray/common"
 )
 
 // ServerSession ...

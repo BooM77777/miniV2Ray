@@ -13,7 +13,7 @@ import (
 	"net"
 	"time"
 
-	"../../common"
+	"github.com/BooM77777/miniV2Ray/common"
 )
 
 // ClientSession ...

@@ -5,7 +5,7 @@ import (
 	"net/url"
 	"testing"
 
-	"../../common"
+	"github.com/BooM77777/miniV2Ray/common"
 )
 
 type TestIO struct {

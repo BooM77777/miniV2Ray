@@ -4,7 +4,7 @@ import (
 	"io"
 	"net/url"
 
-	"../../common"
+	"github.com/BooM77777/miniV2Ray/common"
 )
 
 // OutboundHandler ...

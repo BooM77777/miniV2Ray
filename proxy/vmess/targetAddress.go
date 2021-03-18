@@ -4,7 +4,7 @@ import (
 	"encoding/binary"
 	"net"
 
-	"../../common"
+	"github.com/BooM77777/miniV2Ray/common"
 )
 
 // TargetAddress 用于存储消息转发的目的地址

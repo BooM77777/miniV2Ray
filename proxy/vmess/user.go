@@ -3,7 +3,7 @@ package vmess
 import (
 	"crypto/md5"
 
-	"../../common"
+	"github.com/BooM77777/miniV2Ray/common"
 )
 
 // User ...
